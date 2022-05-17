@@ -20,7 +20,6 @@ export const post: RequestHandler = async ({ request }) => {
     }
 
     const formats = await getFormats();
-    console.log(formats);
 
     if (!formats.to.includes(convertTo.toUpperCase())) {
         return {

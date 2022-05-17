@@ -63,7 +63,7 @@
     <FormatSelect bind:value={convertTo} formats={formats.to} />
 
     <button on:click={onConvert}>Convert!</button>
-    
+
     {#if error}
         <span class="error">{error}</span>
     {/if}
@@ -73,7 +73,7 @@
     Converted:
     <div>
         {#if convertedFiles}
-            <Converted data={convertedFiles} />
+            <Converted data={convertedFiles} format={convertTo} />
         {/if}
     </div>
 </main>
