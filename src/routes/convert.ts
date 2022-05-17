@@ -1,6 +1,6 @@
 import type { RequestHandler } from "@sveltejs/kit";
 import type { RequestBody } from "$lib/types/request-body";
-import { readFileSync, writeFileSync } from "fs";
+import { fstat, readFileSync, unlinkSync, writeFileSync } from "fs";
 import { v4 as uuid } from "uuid";
 import im from "imagemagick";
 import { getFormats } from "$lib/util/getFormats";
@@ -76,12 +76,15 @@ export const post: RequestHandler = async ({ request }) => {
 
         const name = uuid();
         names.push(name);
-        writeFileSync(name, buf); // TODO async
+        writeFileSync(`tmp/${name}`, buf); // TODO async
 
         const p = new Promise<void>((resolve, reject) => {
-            im.convert([name, `${name}.${convertTo}`], (err, result) => {
+            im.convert([`tmp/${name}`, `tmp/${name}.${convertTo}`], (err, result) => {
                 if (err) reject();
-                else resolve();
+                else {
+                    unlinkSync(`tmp/${name}`);
+                    resolve();
+                }
             });
         });
         promises.push(p);
@@ -92,8 +95,10 @@ export const post: RequestHandler = async ({ request }) => {
     const convertedFiles: string[] = [];
 
     for (const name of names) {
-        const data = readFileSync(`${name}.${convertTo}`, "base64").toString();
+        const data = readFileSync(`tmp/${name}.${convertTo}`, "base64").toString();
         convertedFiles.push(`data:image/${convertTo};base64,${data}`);
+
+        unlinkSync(`tmp/${name}.${convertTo}`);
     }
 
     return {
