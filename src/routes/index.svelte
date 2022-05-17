@@ -1,6 +1,5 @@
 <script lang="ts">
     import ImageFile from "$lib/components/ImageFile.svelte";
-    import type { RequestBody } from "$lib/types/request-body";
     import { getFilesData } from "$lib/util/getFileData";
 
     let files: FileList | undefined;
