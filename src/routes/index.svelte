@@ -1,7 +1,21 @@
 <script lang="ts">
     import ImageFile from "$lib/components/ImageFile.svelte";
+    import type { RequestBody } from "$lib/types/request-body";
+    import { getFilesData } from "$lib/util/getFileData";
 
     let files: FileList | undefined;
+
+    const onConvert = async () => {
+        const data = await getFilesData(files);
+
+        fetch('/', {
+            method: 'POST',
+            body: JSON.stringify({
+                files: data,
+                convertTo: 'png',
+            }),
+        })
+    };
 </script>
 
 
@@ -17,8 +31,9 @@
                 <ImageFile {file} />
             {/each}
         {/if}
-        
     </div>
+
+    <button on:click={onConvert}>Convert!</button>
 </main>
 
 
