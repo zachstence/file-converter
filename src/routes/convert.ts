@@ -4,11 +4,12 @@ import { readFileSync, writeFileSync } from "fs";
 import { v4 as uuid } from "uuid";
 import im from "imagemagick";
 
-const FROM = "png";
-const TO = "jpg";
-
 export const post: RequestHandler = async ({ request }) => {
-    const { files } = await request.json() as RequestBody;
+    const { files, convertTo } = await request.json() as RequestBody;
+
+    if (!files || !files.length || !convertTo) {
+        return { status: 400 };
+    }
     
     const promises: Promise<void>[] = []
     const names: string[] = [];
@@ -19,10 +20,10 @@ export const post: RequestHandler = async ({ request }) => {
 
         const name = uuid();
         names.push(name);
-        writeFileSync(`${name}.${FROM}`, buf); // TODO async
+        writeFileSync(name, buf); // TODO async
 
         const p = new Promise<void>((resolve, reject) => {
-            im.convert([`${name}.${FROM}`, `${name}.${TO}`], (err, result) => {
+            im.convert([name, `${name}.${convertTo}`], (err, result) => {
                 if (err) reject();
                 else resolve();
             });
@@ -35,8 +36,8 @@ export const post: RequestHandler = async ({ request }) => {
     const convertedFiles: string[] = [];
 
     for (const name of names) {
-        const data = readFileSync(`${name}.${TO}`, "base64").toString();
-        convertedFiles.push(`data:image/${TO};base64,${data}`);
+        const data = readFileSync(`${name}.${convertTo}`, "base64").toString();
+        convertedFiles.push(`data:image/${convertTo};base64,${data}`);
     }
 
     return {

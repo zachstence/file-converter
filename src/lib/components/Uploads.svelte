@@ -1,6 +1,5 @@
 <script lang="ts">
-import { getFileData, getFilesData } from "../util/getFileData";
-
+    import { getFilesData } from "../util/getFileData";
 
     export let files: FileList;
 

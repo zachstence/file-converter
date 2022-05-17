@@ -1,14 +1,10 @@
+import type { Formats } from "$lib/types/formats";
 import type { RequestHandler } from "@sveltejs/kit";
 import im from "imagemagick";
 import { promisify } from "util";
 
 const identify = promisify(im.identify);
 const FORMAT_REGEX = /\s*(\w+)\*? \w+\s+([r-])([w-])([+-])\s+.*/
-
-export interface Formats {
-    from: string[];
-    to: string[];
-}
 
 export const get: RequestHandler<never, Formats> = async () => {
     const body: Formats = {
