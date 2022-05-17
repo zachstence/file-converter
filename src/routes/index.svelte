@@ -22,6 +22,7 @@
     let files: FileList | undefined;
     let convertedFiles: string[];
     let convertTo: string;
+    let error: string;
 
     const onConvert = async () => {
         const data = await getFilesData(files);
@@ -33,8 +34,12 @@
                 convertTo,
             }),
         });
-
         const json = await res.json();
+
+        if (res.status !== 200) {
+            error = json.message;
+        }
+
         convertedFiles = json.files;
     };
 </script>
@@ -59,6 +64,10 @@
 
     <button on:click={onConvert}>Convert!</button>
     
+    {#if error}
+        <span class="error">{error}</span>
+    {/if}
+
     <br />
 
     Converted:
@@ -86,5 +95,9 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
+    }
+
+    .error {
+        color: red;
     }
 </style>
