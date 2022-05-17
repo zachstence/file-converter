@@ -6,7 +6,8 @@ const config = {
 	theme: {
 		extend: {
 			fontFamily: {
-				'logo': ['Asap', ...defaultTheme.fontFamily.sans]
+				'logo': ['Asap', ...defaultTheme.fontFamily.sans],
+				'sans': ['Raleway', ...defaultTheme.fontFamily.sans],
 			}
 		}
 	},
