@@ -1,5 +1,5 @@
 import type { RequestHandler } from "@sveltejs/kit";
-import type { RequestBody } from "../lib/types/request-body";
+import type { RequestBody } from "$lib/types/request-body";
 import { readFileSync, writeFileSync } from "fs";
 import { v4 as uuid } from "uuid";
 import im from "imagemagick";
