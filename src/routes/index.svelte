@@ -80,13 +80,6 @@
 
 
 <style>
-    :global(body) {
-        width: 100vw;
-        height: 100vh;
-        margin: 0;
-        background-color: #35363A;
-        color: white;
-    }
     main {
         height: 100%;
         width: 100%;
