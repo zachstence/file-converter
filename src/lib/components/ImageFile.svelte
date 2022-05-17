@@ -1,17 +1,17 @@
 <script lang="ts">
+import { getFileData } from "../util/getFileData";
+
+
     export let file: File;
 
-    let src: string | undefined;
-
-    const reader = new FileReader();
-
-    reader.onload = e => {
-        src = e.target?.result?.toString()
-    }
-    reader.readAsDataURL(file);
+    const p = getFileData(file);
 </script>
 
 
-{#if src}
-    <img src={src} alt={file.name} height={200} />
-{/if}
+{#await p}
+    Loading...
+{:then data}
+    <img src={data} alt={file.name} height={200} />
+{:catch error}
+    <pre>{JSON.stringify(error)}</pre>
+{/await}
