@@ -1,5 +1,5 @@
 <script lang="ts">
-    import ImageFile from "$lib/components/ImageFile.svelte";
+    import Uploads from "$lib/components/Uploads.svelte";
     import { getFilesData } from "$lib/util/getFileData";
 
     let files: FileList | undefined;
@@ -26,9 +26,7 @@
 
     <div class="files">
         {#if files}
-            {#each files as file}
-                <ImageFile {file} />
-            {/each}
+            <Uploads {files} />
         {/if}
     </div>
 
