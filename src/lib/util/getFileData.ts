@@ -12,7 +12,7 @@ export const getFileData = async (file: File): Promise<string> => {
         reader.onerror = e => reject(e);
 
         // TODO progress
-    })
+    });
 };
 
 export const getFilesData = async (files?: FileList): Promise<string[]> => {
@@ -24,4 +24,4 @@ export const getFilesData = async (files?: FileList): Promise<string[]> => {
     }
 
     return Promise.all(_files.map(getFileData));
-}
+};
