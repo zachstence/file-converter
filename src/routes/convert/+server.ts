@@ -1,8 +1,8 @@
-import type { RequestHandler } from '@sveltejs/kit'
 import im from 'imagemagick'
 import { getFormats } from '$lib/util/getFormats'
 import { fGetInput, fPutOutput, getDownloadUrl } from '$lib/minio'
 import { deleteFile } from '$lib/util/deleteFile'
+import { error, json } from '@sveltejs/kit'
 
 export interface ConvertRequestBody {
   objectName: string
@@ -13,18 +13,15 @@ export interface ConvertResponseBody {
   downloadUrl: string
 }
 
-export const post: RequestHandler<never, ConvertResponseBody> = async ({ request }) => {
+type RequestHandler = import('./$types').RequestHandler
+
+export const POST: RequestHandler = async ({ request }) => {
   const { objectName, convertTo } = (await request.json()) as ConvertRequestBody
 
   // Validate convertTo format
   const formats = await getFormats()
   if (!formats.to.includes(convertTo.toUpperCase())) {
-    return {
-      status: 400,
-      body: {
-        message: `Converting to ${convertTo} is not supported`,
-      },
-    }
+    return error(400, `Converting to ${convertTo} is not supported`)
   }
 
   const filepath = await fGetInput(objectName)
@@ -43,5 +40,6 @@ export const post: RequestHandler<never, ConvertResponseBody> = async ({ request
   // Delete local files
   await Promise.all([deleteFile(filepath), deleteFile(outputFilepath)])
 
-  return { body: { downloadUrl } }
+  const body: ConvertResponseBody = { downloadUrl }
+  return json(body)
 }
