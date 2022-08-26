@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createItem, type ItemStore } from '$lib/store/item.store'
+  import { createItem, type ItemStore } from '$lib/store/item'
 
   let files: FileList | undefined
 
