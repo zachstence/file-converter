@@ -1,20 +1,18 @@
-const defaultTheme = require('tailwindcss/defaultTheme');
+const defaultTheme = require('tailwindcss/defaultTheme')
 
 const config = {
-	content: ['./src/**/*.{html,js,svelte,ts}'],
+  content: ['./src/**/*.{html,js,svelte,ts}'],
 
-	theme: {
-		extend: {
-			fontFamily: {
-				'logo': ['Asap', ...defaultTheme.fontFamily.sans],
-				'sans': ['Raleway', ...defaultTheme.fontFamily.sans],
-			}
-		}
-	},
+  theme: {
+    extend: {
+      fontFamily: {
+        logo: ['Asap', ...defaultTheme.fontFamily.sans],
+        sans: ['Raleway', ...defaultTheme.fontFamily.sans],
+      },
+    },
+  },
 
-	plugins: [
-		require("daisyui"),
-	],
-};
+  plugins: [require('daisyui')],
+}
 
-module.exports = config;
+module.exports = config

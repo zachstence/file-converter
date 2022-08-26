@@ -15,11 +15,15 @@
 {#if item}
   <div>
     <p>Item:</p>
-    <pre>{JSON.stringify({
-        filename: $item.file.name,
-        filetype: $item.file.type,
-        status: $item.status,
-      }, null, 2)}</pre>
+    <pre>{JSON.stringify(
+        {
+          filename: $item.file.name,
+          filetype: $item.file.type,
+          status: $item.status,
+        },
+        null,
+        2,
+      )}</pre>
   </div>
 
   <button on:click={item.convert}>Convert</button>
