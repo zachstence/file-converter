@@ -1,9 +1,12 @@
 <script lang="ts">
+import type { ConvertResponseBody } from "./convert";
+
     import type { UploadUrlResponse } from "./upload-url";
 
     let uploadUrl: string | undefined
     let objectName: string | undefined
     let files: FileList | undefined
+    let downloadUrl: string | undefined
 
     $: console.log({files, uploadUrl})
 
@@ -47,10 +50,16 @@
             objectName,
             convertTo: 'png',
         })
-        await fetch('/convert', {
+        const response = await fetch('/convert', {
             method: 'POST',
             body
         })
+        if (response.ok) {
+            const json = await response.json() as ConvertResponseBody
+            downloadUrl = json.downloadUrl
+        } else {
+            throw response
+        }
     }
 </script>
 
@@ -69,3 +78,7 @@
 <button on:click={upload}>Upload</button>
 
 <button on:click={convert}>Convert</button>
+
+{#if downloadUrl}
+    <img src={downloadUrl} alt="Converted" />
+{/if}

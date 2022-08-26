@@ -1,5 +1,4 @@
 import * as Minio from 'minio';
-import type { Readable } from 'stream'
 
 const inputBucket = 'input'
 const outputBucket = 'output'
@@ -25,6 +24,10 @@ export const fGetInput = async (objectName: string): Promise<string> => {
     return path
 }
 
-export const putOutput = async (objectName: string, object: Readable): Promise<void> => {
-    await client.putObject(outputBucket, objectName, object)
+export const fPutOutput = async (objectName: string, filepath: string): Promise<void> => {
+    await client.fPutObject(outputBucket, objectName, filepath)
+}
+
+export const getDownloadUrl = (objectName: string): Promise<string> => {
+    return client.presignedUrl('GET', outputBucket, objectName)
 }

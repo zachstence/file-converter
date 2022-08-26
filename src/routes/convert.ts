@@ -1,15 +1,19 @@
 import type { RequestHandler } from "@sveltejs/kit";
 import im from "imagemagick";
 import { getFormats } from "$lib/util/getFormats";
-import { fGetInput } from "../minio";
-import { unlink } from 'fs'
+import { fGetInput, fPutOutput, getDownloadUrl } from "../minio";
+import { deleteFile } from "$lib/util/deleteFile";
 
 export interface ConvertRequestBody {
     objectName: string
     convertTo: string
 }
 
-export const post: RequestHandler = async ({ request }) => {
+export interface ConvertResponseBody {
+    downloadUrl: string
+}
+
+export const post: RequestHandler<never, ConvertResponseBody> = async ({ request }) => {
     const { objectName, convertTo } = await request.json() as ConvertRequestBody;
 
     // Validate convertTo format
@@ -24,19 +28,23 @@ export const post: RequestHandler = async ({ request }) => {
     }
     
     const filepath = await fGetInput(objectName)
-
-    const result = await new Promise<void>((resolve, reject) => {
-        im.convert([filepath, `${filepath}.${convertTo}`], (err, result) => {
-            unlink(filepath, (err) => {
-                if (err) reject(err)
-                else resolve(result)
-            });
-
+    const outputFilepath = `${filepath}.${convertTo}`
+    await new Promise<void>((resolve, reject) => {
+        im.convert([filepath, outputFilepath], (err, result) => {
             if (err) reject(err);
+            else resolve(result)
         });
     });
 
-    console.log(result)
+    // Upload result to Minio
+    await fPutOutput(objectName, outputFilepath)
+    const downloadUrl = await getDownloadUrl(objectName)
 
-    return {}
+    // Delete local files
+    await Promise.all([
+        deleteFile(filepath),
+        deleteFile(outputFilepath),
+    ])
+
+    return { body: { downloadUrl } }
 };
