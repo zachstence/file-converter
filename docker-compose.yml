@@ -13,5 +13,19 @@ services:
       MINIO_ROOT_PASSWORD: password
     command: server --console-address ":9001" /data
 
+  create-buckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+        /usr/bin/mc config host add cnvrtr http://minio:9000 admin password;
+        /usr/bin/mc rm -r --force cnvrtr/input || true;
+        /usr/bin/mc mb cnvrtr/input;
+        /usr/bin/mc rm -r --force cnvrtr/output || true;
+        /usr/bin/mc mb cnvrtr/output;
+        exit 0;
+      "
+
 volumes:
   minio-data: {}
