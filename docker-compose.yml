@@ -3,6 +3,7 @@ version: '3'
 services:
   minio:
     image: minio/minio
+    restart: on-failure
     ports:
       - 9000:9000
       - 9001:9001
@@ -17,6 +18,7 @@ services:
     image: minio/mc
     depends_on:
       - minio
+    restart: on-failure
     entrypoint: >
       /bin/sh -c "
         /usr/bin/mc config host add cnvrtr http://minio:9000 admin password;
@@ -26,6 +28,19 @@ services:
         /usr/bin/mc mb cnvrtr/output;
         exit 0;
       "
+  
+  cnvrtr:
+    image: node:16.13.1
+    restart: on-failure
+    ports:
+      - 3000:3000
+    working_dir: /app
+    volumes:
+      - ./:/app
+    environment:
+      # TODO env variables for minio config
+      - NODE_ENV=development
+    command: "npm run dev -- --host 0.0.0.0"
 
 volumes:
   minio-data: {}
