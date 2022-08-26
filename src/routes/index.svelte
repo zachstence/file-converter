@@ -1,4 +1,6 @@
 <script lang="ts">
+import { createItem, type ItemStore } from "$lib/store/file.store";
+
 import type { ConvertResponseBody } from "./convert";
 
     import type { UploadUrlResponse } from "./upload-url";
@@ -8,7 +10,12 @@ import type { ConvertResponseBody } from "./convert";
     let files: FileList | undefined
     let downloadUrl: string | undefined
 
-    $: console.log({files, uploadUrl})
+    let item: ItemStore
+    $: if (files) {
+        console.log({files})
+        item = createItem(files[0])
+        console.log({item})
+    }
 
     const onGetUploadUrl = async (): Promise<void> => {
         ({ id: objectName, uploadUrl } = await getUploadUrl())
@@ -82,3 +89,15 @@ import type { ConvertResponseBody } from "./convert";
 {#if downloadUrl}
     <img src={downloadUrl} alt="Converted" />
 {/if}
+
+<br />
+<br />
+<br />
+
+{#if $item}
+    <pre>File: {$item.file.name}</pre>
+    <pre>Converting: {$item.converting}</pre>
+    <pre>Progress: {$item.progress}</pre>
+{/if}
+
+<button on:click={item.convert}>Item Convert</button>
