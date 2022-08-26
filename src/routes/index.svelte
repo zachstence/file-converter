@@ -12,10 +12,13 @@
 </script>
 
 <script lang="ts">
-    import Uploads from "$lib/components/Uploads.svelte";
-    import { getFilesData } from "$lib/util/getFileData";
     import Converted from "$lib/components/Converted.svelte";
     import FormatSelect from "$lib/components/FormatSelect.svelte";
+    import { uploads } from "$lib/store/uploads.store";
+    import { readUploads } from "$lib/util/getFileData";
+    import { derived, writable, type Readable } from "svelte/store";
+    import type { IUpload } from "$lib/types/upload";
+    import Upload from "$lib/components/Upload.svelte";
 
     export let formats: Formats;
 
@@ -24,13 +27,39 @@
     let convertTo: string;
     let error: string;
 
-    const onConvert = async () => {
-        const data = await getFilesData(files);
+    let allUploads: Readable<IUpload[]>;
 
+    $: console.log('allUploads', $allUploads);
+
+    const onUpload: svelte.JSX.EventHandler<Event, HTMLInputElement> = async (e) => {
+        console.log('onUpload', e)
+        const _files = e.currentTarget.files;
+        console.log('onUpload', _files)
+        if (!_files) return;
+
+        // Upload files
+        for (let i = 0; i < _files.length; i++) {
+            const store = writable<IUpload>({
+                status: "reading",
+                file: _files[i],
+            });
+            uploads.push(store);
+        }
+
+        allUploads = derived(uploads, values => {
+            console.log('uploads changed')
+            return values
+        });
+
+        // Read data
+        await readUploads();
+    }
+
+    const onConvert = async () => {
         const res = await fetch("/convert", {
             method: "POST",
             body: JSON.stringify({
-                files: data,
+                files: $allUploads,
                 convertTo,
             }),
         });
@@ -42,24 +71,28 @@
 
         convertedFiles = json.files;
     };
+
+    $: console.log(uploads.length)
+
 </script>
 
 
 <main>
     <label>
         Upload files
-        <input type="file" multiple bind:files={files} />
+        <input type="file" multiple on:change={onUpload} />
     </label>
 
     <br />
-    
-    Uploaded:
-    <div>
-        {#if files}
-        <Uploads {files} />
+
+    <div class="uploads">
+        {#if $allUploads?.length}
+            {#each uploads as upload}
+                <Upload upload={upload} />
+            {/each}
         {/if}
     </div>
-    
+
     <FormatSelect bind:value={convertTo} formats={formats.to} />
 
     <button on:click={onConvert}>Convert!</button>

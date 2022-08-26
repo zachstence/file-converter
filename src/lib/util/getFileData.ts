@@ -1,27 +1,29 @@
-export const getFileData = async (file: File): Promise<string> => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
+import { uploads } from "$lib/store/uploads.store";
+import { get } from "svelte/store";
 
-    return new Promise<string>((resolve, reject) => {
+export const readUploads = (): void => {
+    for (const upload of uploads) {
+        const next = get(upload)
+        console.log('reading', next.file.name)
+
+        const reader = new FileReader();
+        reader.readAsDataURL(next.file);
+
         reader.onload = e => {
             const s = e.target?.result?.toString();
-            if (!s) reject();
-            else resolve(s);
+            if (!s) {
+                next.error = "Couldn't read file";
+            } else {
+                next.data = s;
+                next.status = 'ready'
+                console.log('read', next.file.name, next.data.length)
+            }
         };
 
-        reader.onerror = e => reject(e);
+        reader.onerror = e => {
+            next.error = "Couldn't read file";
+        };
 
-        // TODO progress
-    });
-};
-
-export const getFilesData = async (files?: FileList): Promise<string[]> => {
-    if (!files || !files.length) return [];
-    
-    const _files: File[] = [];
-    for (let i = 0; i < files.length; i++) {
-        _files.push(files[i]);
+        upload.set(next)
     }
-
-    return Promise.all(_files.map(getFileData));
-};
+}
