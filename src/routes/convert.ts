@@ -1,26 +1,19 @@
 import type { RequestHandler } from "@sveltejs/kit";
-import type { RequestBody } from "$lib/types/request-body";
-import { fstat, readFileSync, unlinkSync, writeFileSync } from "fs";
-import { v4 as uuid } from "uuid";
 import im from "imagemagick";
 import { getFormats } from "$lib/util/getFormats";
+import { fGetInput } from "../minio";
+import { unlink } from 'fs'
 
-const FORMAT_REGEX = /^data:image\/(\w+);base64,(.*)/;
+export interface ConvertRequestBody {
+    objectName: string
+    convertTo: string
+}
 
 export const post: RequestHandler = async ({ request }) => {
-    const { files, convertTo } = await request.json() as RequestBody;
+    const { objectName, convertTo } = await request.json() as ConvertRequestBody;
 
-    if (!files || !files.length || !convertTo) {
-        return {
-            status: 400,
-            body: {
-                message: "Please specify files and format to convert to",
-            },
-        };
-    }
-
+    // Validate convertTo format
     const formats = await getFormats();
-
     if (!formats.to.includes(convertTo.toUpperCase())) {
         return {
             status: 400,
@@ -30,80 +23,20 @@ export const post: RequestHandler = async ({ request }) => {
         };
     }
     
-    const promises: Promise<void>[] = []
-    const names: string[] = [];
+    const filepath = await fGetInput(objectName)
 
-    for (const file of files) {
-        const match = file.match(FORMAT_REGEX);
-        if (!match) {
-            return {
-                status: 400,
-                body: {
-                    message: "Unable to determine format",
-                },
-            };
-        }
-
-        const [_, format, data] = match;
-        if (!format) {
-            return {
-                status: 400,
-                body: {
-                    message: "Unable to determine format",
-                },
-            };
-        }
-
-        if (!formats.from.includes(format.toUpperCase())) {
-            return {
-                status: 400,
-                body: {
-                    message: `Converting from ${format} is not supported`,
-                },
-            }
-        }
-
-        if (!data) {
-            return {
-                status: 400,
-                body: {
-                    message: "No data",
-                },
-            };
-        }
-        
-        const buf = Buffer.from(data, "base64");
-
-        const name = uuid();
-        names.push(name);
-        writeFileSync(`tmp/${name}`, buf); // TODO async
-
-        const p = new Promise<void>((resolve, reject) => {
-            im.convert([`tmp/${name}`, `tmp/${name}.${convertTo}`], (err, result) => {
-                if (err) reject();
-                else {
-                    unlinkSync(`tmp/${name}`);
-                    resolve();
-                }
+    const result = await new Promise<void>((resolve, reject) => {
+        im.convert([filepath, `${filepath}.${convertTo}`], (err, result) => {
+            unlink(filepath, (err) => {
+                if (err) reject(err)
+                else resolve(result)
             });
+
+            if (err) reject(err);
         });
-        promises.push(p);
-    }
+    });
 
-    await Promise.all(promises);
+    console.log(result)
 
-    const convertedFiles: string[] = [];
-
-    for (const name of names) {
-        const data = readFileSync(`tmp/${name}.${convertTo}`, "base64").toString();
-        convertedFiles.push(`data:image/${convertTo};base64,${data}`);
-
-        unlinkSync(`tmp/${name}.${convertTo}`);
-    }
-
-    return {
-        body: {
-            files: convertedFiles,
-        },
-    };
+    return {}
 };

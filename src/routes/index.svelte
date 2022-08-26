@@ -2,19 +2,19 @@
     import type { UploadUrlResponse } from "./upload-url";
 
     let uploadUrl: string | undefined
+    let objectName: string | undefined
     let files: FileList | undefined
 
     $: console.log({files, uploadUrl})
 
     const onGetUploadUrl = async (): Promise<void> => {
-        uploadUrl = await getUploadUrl()
+        ({ id: objectName, uploadUrl } = await getUploadUrl())
     }
 
-    const getUploadUrl = async (): Promise<string> => {
+    const getUploadUrl = async (): Promise<UploadUrlResponse> => {
         const response = await fetch(`/upload-url`)
         if (response.ok) {
-            const json = await response.json() as UploadUrlResponse
-            return json.uploadUrl
+            return response.json()
         }
         throw response
     }
@@ -41,6 +41,17 @@
         if (!files || !files.length) return
         fileReader.readAsArrayBuffer(files[0])
     }
+
+    const convert = async (): Promise<void> => {
+        const body = JSON.stringify({
+            objectName,
+            convertTo: 'png',
+        })
+        await fetch('/convert', {
+            method: 'POST',
+            body
+        })
+    }
 </script>
 
 <input type="file" bind:files />
@@ -56,3 +67,5 @@
 <pre>{uploadUrl}</pre>
 
 <button on:click={upload}>Upload</button>
+
+<button on:click={convert}>Convert</button>
