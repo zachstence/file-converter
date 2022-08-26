@@ -1,7 +1,7 @@
 import type { RequestHandler } from "@sveltejs/kit";
 import im from "imagemagick";
 import { getFormats } from "$lib/util/getFormats";
-import { fGetInput, fPutOutput, getDownloadUrl } from "../minio";
+import { fGetInput, fPutOutput, getDownloadUrl } from "$lib/minio";
 import { deleteFile } from "$lib/util/deleteFile";
 
 export interface ConvertRequestBody {

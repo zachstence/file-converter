@@ -1,5 +1,5 @@
 import type { RequestHandler } from "@sveltejs/kit";
-import { getUploadUrl } from "../minio";
+import { getUploadUrl } from "$lib/minio";
 import { v4 as uuid } from 'uuid';
 
 export interface UploadUrlResponse {

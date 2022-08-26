@@ -26,6 +26,9 @@ export const fGetInput = async (objectName: string): Promise<string> => {
 
 export const fPutOutput = async (objectName: string, filepath: string): Promise<void> => {
     await client.fPutObject(outputBucket, objectName, filepath)
+    await client.putObjectRetention(outputBucket, objectName, {
+        retainUntilDate: new Date(2022, 8, 27, 5, 23, 0).toISOString()
+    } as Minio.Retention)
 }
 
 export const getDownloadUrl = (objectName: string): Promise<string> => {
